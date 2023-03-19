@@ -3,7 +3,9 @@
     feature = "cortex-m-basepri",
     feature = "test-template"
 )))]
-compile_error!("No backend selected");
+pub use esp32::*;
+mod esp32;
+//compile_error!("No backend selected");
 
 #[cfg(any(feature = "cortex-m-source-masking", feature = "cortex-m-basepri"))]
 pub use cortex::*;
