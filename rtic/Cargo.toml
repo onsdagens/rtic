@@ -37,7 +37,7 @@ name = "rtic"
 riscv = "0.10.1"
 esp32c3 = "0.11.0"
 esp32c3-hal = { version = "0.7.0", features = ["direct-boot"] }
-esp-riscv-rt = {version = "0.1.0"}
+#esp-riscv-rt = {version = "0.1.0"}
 cortex-m = "0.7.0"
 bare-metal = "1.0.0"
 #portable-atomic = { version = "0.3.19" }
@@ -90,6 +90,3 @@ test-critical-section = ["cortex-m/critical-section-single-core", "rtic-monotoni
 esp-riscv-rt = {git = 'https://github.com/onsdagens/esp-riscv-rt', branch='scaled_back'}
 esp-hal-common = { git = 'https://github.com/onsdagens/esp-hal/', branch='scaled_back' }
 esp32c3-hal = { git = 'https://github.com/onsdagens/esp-hal/', branch='scaled_back' }
-#esp-riscv-rt = {path = '/home/pawel/Desktop/esp-riscv-rt'}
-#esp-hal-common = {path = '/home/pawel/Desktop/hal_tings/esp-hal/esp-hal-common'}
-#esp32c3-hal = {path = '/home/pawel/Desktop/hal_tings/esp-hal/esp32c3-hal'}

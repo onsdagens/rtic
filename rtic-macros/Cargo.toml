@@ -35,6 +35,7 @@ riscv-esp32c3 = []
 test-template = []
 
 [dependencies]
+#esp32c3-hal = { version = "0.7.0", features = ["direct-boot"] }
 indexmap = "1.9.2"
 proc-macro2 = "1.0.49"
 proc-macro-error = "1.0.4"

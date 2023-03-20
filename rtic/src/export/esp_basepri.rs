@@ -1,8 +1,8 @@
 pub use esp32c3::{Peripherals, Interrupt};
-pub use riscv::{interrupt};
-pub use esp32c3_hal::interrupt as hal_interrupt;
-use esp32c3_hal::interrupt::Priority;
-//pub use esp32c3_hal::{interrupt};
+pub use esp32c3_hal::interrupt as hal_interrupt; //high level peripheral interrupt access
+pub use esp32c3_hal::riscv::interrupt; //low level interrupt enable/disable
+use esp32c3_hal::interrupt::Priority; //need this for setting priority since the method takes an object and not a int
+use esp32c3::INTERRUPT_CORE0; //priority threshold control
 
 
 #[inline(always)]
@@ -14,23 +14,22 @@ where
         //if priority is 1, priority thresh should be 1
         f();
         unsafe {
-            (*esp32c3::INTERRUPT_CORE0::ptr()).
+            (*INTERRUPT_CORE0::ptr()).
             cpu_int_thresh.
             write(|w|{w.cpu_int_thresh().bits(1)});
         }
     } else {
         //just a read so safe
         let initial = unsafe{
-            (*esp32c3::INTERRUPT_CORE0::ptr())
+            (*INTERRUPT_CORE0::ptr())
             .cpu_int_thresh.read()
             .cpu_int_thresh()
             .bits()
         };
-
         f();
         //write back the old value, safe
         unsafe {
-            (*esp32c3::INTERRUPT_CORE0::ptr()).
+            (*INTERRUPT_CORE0::ptr()).
             cpu_int_thresh.
             write(|w|{
                 w.cpu_int_thresh().
@@ -78,7 +77,6 @@ where
 pub unsafe fn lock<T, R>(
     ptr: *mut T,
     ceiling: u8,
-    thresh_prio_bits: u8,
     f: impl FnOnce(&mut T) -> R,
 ) -> R {
     
@@ -87,13 +85,17 @@ pub unsafe fn lock<T, R>(
         r
     } else {
 
-         let current = unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.read()
+        let current = unsafe{
+            (*INTERRUPT_CORE0::ptr())
+            .cpu_int_thresh
+            .read()
             .cpu_int_thresh()
-            .bits()};
+            .bits()
+        };
 
-        unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(ceiling + 1))}     
+        unsafe{(*INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(ceiling + 1))}     
         let r = f(&mut *ptr);
-        unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(current))}
+        unsafe{(*INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(current))}
         r
     }
 }
