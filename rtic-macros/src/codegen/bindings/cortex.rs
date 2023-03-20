@@ -188,7 +188,6 @@ pub fn pre_init_checks(app: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
 
 pub fn pre_init_enable_interrupts(app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
     let mut stmts = vec![];
-
     let interrupt = util::interrupt_ident();
     let rt_err = util::rt_err_ident();
     let device = &app.args.device;

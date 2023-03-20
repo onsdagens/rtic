@@ -20,9 +20,9 @@ compile_error!(
     "Building for Cortex-M with source masking, but 'thumbv6-backend' or 'thumbv8base-backend' backend not selected"
 );
 
-
+//#[cfg(any(feature = "esp32c3"))]
 pub use esp_basepri::*;
-
+//#[cfg(any(feature = "esp32c3"))]
 mod esp_basepri;
 
 #[cfg(any(feature = "cortex-m-basepri", feature = "rtic-uitestv7"))]

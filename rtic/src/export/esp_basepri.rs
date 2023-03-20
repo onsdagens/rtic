@@ -1,4 +1,6 @@
-use esp32c3;
+pub use esp32c3::{*, Peripherals};
+pub use riscv::{*, interrupt};
+
 
 #[inline(always)]
 pub fn run<F>(priority: u8, f: F)
@@ -15,10 +17,13 @@ where
         }
     } else {
         //just a read so safe
-        let initial = unsafe{(*esp32c3::INTERRUPT_CORE0::ptr())}
-        .cpu_int_thresh.read()
-        .cpu_int_thresh()
-        .bits();
+        let initial = unsafe{
+            (*esp32c3::INTERRUPT_CORE0::ptr())
+            .cpu_int_thresh.read()
+            .cpu_int_thresh()
+            .bits()
+        };
+
         f();
         //write back the old value, safe
         unsafe {
@@ -73,14 +78,18 @@ pub unsafe fn lock<T, R>(
     thresh_prio_bits: u8,
     f: impl FnOnce(&mut T) -> R,
 ) -> R {
-    if ceiling == (1 << nvic_prio_bits) {
+    if ceiling == (thresh_prio_bits) {
         let r = critical_section::with(|_| f(&mut *ptr));
         r
     } else {
-        let current = basepri::read();
-        basepri::write(cortex_logical2hw(ceiling, nvic_prio_bits));
+         let current = unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.read()
+            .cpu_int_thresh()
+            .bits()};
+
+    
+        unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(ceiling))}
         let r = f(&mut *ptr);
-        basepri::write(current);
+        unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(current))}
         r
     }
 }
