@@ -1,5 +1,8 @@
-pub use esp32c3::{Peripherals};
+pub use esp32c3::{Peripherals, Interrupt};
 pub use riscv::{interrupt};
+pub use esp32c3_hal::interrupt as hal_interrupt;
+use esp32c3_hal::interrupt::Priority;
+//pub use esp32c3_hal::{interrupt};
 
 
 #[inline(always)]
@@ -78,18 +81,41 @@ pub unsafe fn lock<T, R>(
     thresh_prio_bits: u8,
     f: impl FnOnce(&mut T) -> R,
 ) -> R {
-    if ceiling == (thresh_prio_bits) {
+    
+    if ceiling == (15) { //turn off interrupts completely, were at max prio
         let r = critical_section::with(|_| f(&mut *ptr));
         r
     } else {
+
          let current = unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.read()
             .cpu_int_thresh()
             .bits()};
 
-    
-        unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(ceiling))}
+        unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(ceiling + 1))}     
         let r = f(&mut *ptr);
         unsafe{(*esp32c3::INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(current))}
         r
+    }
+}
+
+pub fn int_to_prio(int:u8) -> Priority{
+    match(int){
+        0 => Priority::None,
+        1 => Priority::Priority1,
+        2 => Priority::Priority2,
+        3 => Priority::Priority3,
+        4 => Priority::Priority4,
+        5 => Priority::Priority5,
+        6 => Priority::Priority6,
+        7 => Priority::Priority7,
+        8 => Priority::Priority8,
+        9 => Priority::Priority9,
+        10 => Priority::Priority10,
+        11 => Priority::Priority11,
+        12 => Priority::Priority12,
+        13 => Priority::Priority13,
+        14 => Priority::Priority14,
+        15 => Priority::Priority15,
+        _ => panic!(), //unsupported priority supplied, so best approach is to panic i think.
     }
 }

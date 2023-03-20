@@ -54,6 +54,7 @@ pub fn extra_assertions(_: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
     vec![]
 }
 
+
 pub fn pre_init_checks(app: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
     let mut stmts = vec![];
 
@@ -67,16 +68,14 @@ pub fn pre_init_checks(app: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
     }
     stmts
 }
-
 pub fn pre_init_enable_interrupts(app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
     let mut stmts = vec![];
 
     let interrupt = util::interrupt_ident();
     let rt_err = util::rt_err_ident();
     let device = &app.args.device;
-    let thresh_prio_bits = quote!(#device::cpu_int_thresh);
+    let max_prio:usize = 15; //unfortunately this is not part of pac, but we know that max prio is 15.
     let interrupt_ids = analysis.interrupts.iter().map(|(p, (id, _))| (p, id));
-
     // Unmask interrupts and set their priorities
     for (&priority, name) in interrupt_ids.chain(app.hardware_tasks.values().filter_map(|task| {
         Some((&task.args.priority, &task.args.binds))
@@ -86,19 +85,16 @@ pub fn pre_init_enable_interrupts(app: &App, analysis: &CodegenAnalysis) -> Vec<
         );
         // Compile time assert that this priority is supported by the device
         stmts.push(quote!(
-            const _: () =  if (#thresh_prio_bits) < #priority as usize { ::core::panic!(#es); };
+            const _: () =  if (#max_prio) <= #priority as usize { ::core::panic!(#es); };
         ));
-
-        stmts.push(quote!(
-            core.cpu_int_thresh.set_priority(
-                #rt_err::#interrupt::#name,
-                #priority
-            );
-        ));
-
         // NOTE unmask the interrupt *after* setting its priority: changing the priority of a pended
         // interrupt is implementation defined
-        stmts.push(quote!(rtic::export::INTERRUPT_CORE0::enable(#rt_err::#interrupt::#name);));
+        stmts.push(quote!(
+            rtic::export::hal_interrupt::enable(
+                #rt_err::Interrupt::#name,
+                rtic::export::int_to_prio(#priority)            
+            );
+        ));
     }
     stmts
 }
@@ -109,9 +105,36 @@ pub fn architecture_specific_analysis(_app: &App, _analysis: &SyntaxAnalysis) ->
 }
 
 pub fn interrupt_entry(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
-    vec![]
+    let mut stmts = vec![];
+
+    //we may enable interrupts globally on entry eventually, but first priority threshold must be implemented in assembly.
+    //stmts.push(quote!(riscv::interrupt::enable));
+
+    stmts
 }
 
 pub fn interrupt_exit(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
     vec![]
 }
+
+/*pub fn int_to_prio(int:u8) -> Priority{
+    match(int){
+        0 => None,
+        1 => Priority1,
+        2 => Priority2,
+        3 => Priority3,
+        4 => Priority4,
+        5 => Priority5,
+        6 => Priority6,
+        7 => Priority7,
+        8 => Priority8,
+        9 => Priority9,
+        10 => Priority10,
+        11 => Priority11,
+        12 => Priority12,
+        13 => Priority13,
+        14 => Priority14,
+        15 => Priority15,
+        _ => panic!(),
+    }
+}*/
