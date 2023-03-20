@@ -1,5 +1,5 @@
-pub use esp32c3::{*, Peripherals};
-pub use riscv::{*, interrupt};
+pub use esp32c3::{Peripherals};
+pub use riscv::{interrupt};
 
 
 #[inline(always)]

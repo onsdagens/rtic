@@ -35,7 +35,8 @@ name = "rtic"
 
 [dependencies]
 riscv = "0.10.1"
-esp32c3 = "0.12.0"
+esp32c3 = "0.11.0"
+esp-riscv-rt = {version = "0.1.0"}
 cortex-m = "0.7.0"
 bare-metal = "1.0.0"
 #portable-atomic = { version = "0.3.19" }

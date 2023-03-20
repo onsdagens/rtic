@@ -1,12 +1,12 @@
 use super::cortex_logical2hw;
 use cortex_m::register::basepri;
-pub use cortex_m::{
-    asm::nop,
-    asm::wfi,
-    interrupt,
-    peripheral::{scb::SystemHandler, DWT, NVIC, SCB, SYST},
-    Peripherals,
-};
+//pub use cortex_m::{
+  //  asm::nop,
+  //  asm::wfi,
+ //   interrupt,
+ //   peripheral::{scb::SystemHandler, DWT, NVIC, SCB, SYST},
+  //  Peripherals,
+//};
 
 #[inline(always)]
 pub fn run<F>(priority: u8, f: F)
