@@ -1,8 +1,12 @@
+use esp32c3::system::CPU_INTR_FROM_CPU_0;
 pub use esp32c3::{Peripherals, Interrupt};
 pub use esp32c3_hal::interrupt as hal_interrupt; //high level peripheral interrupt access
 pub use esp32c3_hal::riscv::interrupt; //low level interrupt enable/disable
 use esp32c3_hal::interrupt::Priority; //need this for setting priority since the method takes an object and not a int
 use esp32c3::INTERRUPT_CORE0; //priority threshold control
+use esp32c3_hal::peripherals::SYSTEM;
+use esp32c3_hal::system;
+use rtt_target::rprintln;
 
 
 #[inline(always)]
@@ -93,7 +97,7 @@ pub unsafe fn lock<T, R>(
             .bits()
         };
 
-        unsafe{(*INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(ceiling + 1))}     
+        unsafe{(*INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(ceiling + 1))}     //esp32c3 lets interrupts with prio equal to threshold through so we up it by one
         let r = f(&mut *ptr);
         unsafe{(*INTERRUPT_CORE0::ptr()).cpu_int_thresh.write(|w|w.cpu_int_thresh().bits(current))}
         r
@@ -120,4 +124,23 @@ pub fn int_to_prio(int:u8) -> Priority{
         15 => Priority::Priority15,
         _ => panic!(), //unsupported priority supplied, so best approach is to panic i think.
     }
+}
+
+pub fn pend(int: Interrupt){
+    let system = unsafe { &*SYSTEM::PTR };
+    unsafe{
+    let peripherals = Peripherals::steal();
+    rprintln!("hello from pend");
+    //rprintln!("{:?}", int);
+
+    
+        match int{
+            Interrupt::FROM_CPU_INTR0 => peripherals.SYSTEM.cpu_intr_from_cpu_0.write(|w|w.cpu_intr_from_cpu_0().bit(true)),
+            Interrupt::FROM_CPU_INTR1 => peripherals.SYSTEM.cpu_intr_from_cpu_1.write(|w|w.cpu_intr_from_cpu_1().bit(true)),
+            Interrupt::FROM_CPU_INTR2 => peripherals.SYSTEM.cpu_intr_from_cpu_2.write(|w|w.cpu_intr_from_cpu_2().bit(true)),
+            Interrupt::FROM_CPU_INTR3 => peripherals.SYSTEM.cpu_intr_from_cpu_3.write(|w|w.cpu_intr_from_cpu_3().bit(true)),      
+            _ => rprintln!("unsupported interrupt"), //unsupported sw interrupt provided, panic for now
+        }
+    }
+    
 }

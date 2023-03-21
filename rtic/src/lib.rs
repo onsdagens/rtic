@@ -44,6 +44,7 @@ pub mod mutex {
     pub use rtic_core::Mutex;
 }
 
+use rtt_target::rprintln;
 #[doc(hidden)]
 pub mod export;
 
@@ -51,11 +52,24 @@ pub mod export;
 ///
 /// This is a convenience function around
 /// [`NVIC::pend`](../cortex_m/peripheral/struct.NVIC.html#method.pend)
+/*#[cfg(feature = "cortex-m-basepri")]
 pub fn pend<I>(interrupt: I)
 where
     I: InterruptNumber,
 {
     NVIC::pend(interrupt);
+}*/
+
+/// Sets the given `interrupt` as pending
+///
+/// This is a convenience function around
+/// [`NVIC::pend`](../cortex_m/peripheral/struct.NVIC.html#method.pend)
+#[cfg(not(feature = "cortex-m-basepri"))]
+pub fn pend(interrupt:export::Interrupt)
+{   
+    rprintln!("Hello from overpend");
+    export::pend(interrupt);
+    //NVIC::pend(interrupt);
 }
 
 use core::cell::UnsafeCell;

@@ -55,11 +55,11 @@ pub fn pre_init_checks(app: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
     let mut stmts = vec![];
     // check that all dispatchers exists in the `Interrupt` enumeration regardless of whether
     // they are used or not
-    let interrupt = util::interrupt_ident();
+    //let interrupt = util::interrupt_ident();
     let rt_err = util::rt_err_ident();
 
     for name in app.args.dispatchers.keys() {
-        stmts.push(quote!(let _ = #rt_err::#interrupt::#name;));
+        stmts.push(quote!(let _ = #rt_err::Interrupt::#name;));
     }
     stmts
 }

@@ -6,6 +6,7 @@ use core::{
     pin::Pin,
     task::{Context, Poll, RawWaker, RawWakerVTable, Waker},
 };
+use rtt_target::rprintln;
 
 static WAKER_VTABLE: RawWakerVTable =
     RawWakerVTable::new(waker_clone, waker_wake, waker_wake, waker_drop);
@@ -82,6 +83,7 @@ impl<F: Future> AsyncTaskExecutor<F> {
     /// Spawn a future
     #[inline(always)]
     pub unsafe fn spawn(&self, future: F) {
+        rprintln!("Spawning task");
         // This unsafe is protected by `running` being false and the atomic setting it to true.
         unsafe {
             self.task.get().write(MaybeUninit::new(future));
