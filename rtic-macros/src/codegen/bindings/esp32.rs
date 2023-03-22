@@ -81,10 +81,10 @@ pub fn pre_init_enable_interrupts(app: &App, analysis: &CodegenAnalysis) -> Vec<
         ));    
         //hal enables interrupt and sets prio simultaneously
         stmts.push(quote!(
-                rtic::export::hal_interrupt::enable(
-                    #rt_err::Interrupt::#name, //interrupt struct
-                    rtic::export::int_to_prio(#priority) //interrupt priority object            
-                );
+            rtic::export::hal_interrupt::enable(
+                #rt_err::Interrupt::#name, //interrupt struct
+                rtic::export::int_to_prio(#priority) //interrupt priority object            
+            );
         ));
     }
     stmts
@@ -100,5 +100,13 @@ pub fn interrupt_entry(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStre
 }
 
 pub fn interrupt_exit(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
-    vec![]
+    let mut stmts = vec![];
+
+    //call on software interrupt clearer once interrupt has been served.
+    //stmts.push(quote!(
+     //   rtic::export::unpend();
+   // ));
+
+    stmts
+
 }

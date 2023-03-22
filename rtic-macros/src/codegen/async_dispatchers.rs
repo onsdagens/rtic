@@ -40,12 +40,10 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
 
         let pend_interrupt = if level > 0 {
             let device = &app.args.device;
-            //let enum_ = util::interrupt_ident();
 
             quote!(
-                rprintln!("pend should be in");
-                rtic::pend(#device::Interrupt::#dispatcher_name);)
-            //quote!()
+                rtic::pend(#device::Interrupt::#dispatcher_name);
+            )
         } else {
             // For 0 priority tasks we don't need to pend anything
             quote!()
@@ -78,7 +76,7 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
                 #(#attribute)*
                 unsafe fn #dispatcher_name() {
                     #(#entry_stmts)*
-
+                    rtic::export::unpend(rtic::export::Interrupt::#dispatcher_name); //simulate cortex-m behavior by unpending the interrupt on entry.
                     /// The priority of this interrupt handler
                     const PRIORITY: u8 = #level;
 

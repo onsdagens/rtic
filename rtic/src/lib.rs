@@ -67,9 +67,7 @@ where
 #[cfg(not(feature = "cortex-m-basepri"))]
 pub fn pend(interrupt:export::Interrupt)
 {   
-    rprintln!("Hello from overpend");
     export::pend(interrupt);
-    //NVIC::pend(interrupt);
 }
 
 use core::cell::UnsafeCell;

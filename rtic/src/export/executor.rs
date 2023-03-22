@@ -83,7 +83,6 @@ impl<F: Future> AsyncTaskExecutor<F> {
     /// Spawn a future
     #[inline(always)]
     pub unsafe fn spawn(&self, future: F) {
-        rprintln!("Spawning task");
         // This unsafe is protected by `running` being false and the atomic setting it to true.
         unsafe {
             self.task.get().write(MaybeUninit::new(future));
