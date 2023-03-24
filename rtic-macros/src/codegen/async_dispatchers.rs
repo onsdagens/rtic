@@ -76,6 +76,9 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
                 unsafe fn #dispatcher_name() {
                     #(#entry_stmts)*
 
+                    #[cfg(feature = "esp32c3")]
+                    rtic::export::unpend(rtic::export::Interrupt::#dispatcher_name); //simulate cortex-m behavior by unpending the interrupt on entry.
+
                     /// The priority of this interrupt handler
                     const PRIORITY: u8 = #level;
 
