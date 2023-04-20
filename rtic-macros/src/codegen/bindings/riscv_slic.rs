@@ -27,6 +27,7 @@ pub fn interrupt_mod_ident() -> TokenStream2 {
 }
 
 /// This macro implements the [`rtic::Mutex`] trait for shared resources using the SLIC.
+#[allow(clippy::too_many_arguments)]
 pub fn impl_mutex(
     _app: &App,
     _analysis: &CodegenAnalysis,
