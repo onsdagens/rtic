@@ -19,10 +19,10 @@ mod cortex_basepri;
 pub use cortex_basepri::*;
 
 // Cortex-M target with source mask support
-#[cfg(any(feature = "cortex-m-source-masking", feature = "rtic-uitestv7"))]
+#[cfg(any(feature = "cortex-m-source-masking", feature = "rtic-uitestv6"))]
 mod cortex_source_mask;
 
-#[cfg(any(feature = "cortex-m-source-masking", feature = "rtic-uitestv7"))]
+#[cfg(any(feature = "cortex-m-source-masking", feature = "rtic-uitestv6"))]
 pub use cortex_source_mask::*;
 
 // RISC-V target (any)
