@@ -2,7 +2,7 @@ use crate::syntax::ast::App;
 use crate::{
     analyze::Analysis,
     codegen::{
-        bindings::{interrupt_entry, interrupt_exit},
+        bindings::{interrupt_entry, interrupt_exit, interrupt_mod_ident},
         util,
     },
 };
@@ -39,10 +39,8 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
         };
 
         let pend_interrupt = if level > 0 {
-            let device = &app.args.device;
-            let enum_ = util::interrupt_ident();
-
-            quote!(rtic::export::pend(#device::#enum_::#dispatcher_name);)
+            let interrupt_enum = interrupt_mod_ident();
+            quote!(rtic::export::pend(#interrupt_enum::#dispatcher_name);)
         } else {
             // For 0 priority tasks we don't need to pend anything
             quote!()

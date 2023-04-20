@@ -13,7 +13,7 @@ pub fn codegen(app: &App, analysis: &Analysis) -> Vec<TokenStream2> {
 
     stmts.push(quote!(
         // To set the variable in cortex_m so the peripherals cannot be taken multiple times
-        let mut core: rtic::export::Peripherals = rtic::export::Peripherals::steal().into();
+        let mut core: rtic::export::Peripherals = rtic::export::Peripherals::steal().into(); // TODO avoid rtic::export
     ));
 
     stmts.append(&mut pre_init_checks(app, analysis));

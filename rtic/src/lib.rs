@@ -45,8 +45,8 @@ pub mod mutex {
 #[doc(hidden)]
 pub mod export;
 
-#[cfg(feature = "cortex-m")]
-pub use export::pend;
+/// HANDY RE-EXPORTS
+pub use export::{nop, pend};
 
 use core::cell::UnsafeCell;
 
