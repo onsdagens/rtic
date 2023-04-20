@@ -159,3 +159,18 @@ pub fn interrupt_entry(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStre
 pub fn interrupt_exit(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
     vec![]
 }
+
+/// Macro to define a maximum priority level for async tasks.
+pub fn async_prio_limit(_app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
+    let max = if let Some(max) = analysis.max_async_prio {
+        quote!(#max)
+    } else {
+        quote!(u8::MAX) // No limit
+    };
+
+    vec![quote!(
+        /// Holds the maximum priority level for use by async HAL drivers.
+        #[no_mangle]
+        static RTIC_ASYNC_MAX_LOGICAL_PRIO: u8 = #max;
+    )]
+}
