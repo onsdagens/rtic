@@ -3,7 +3,7 @@ use crate::{
     codegen::util,
     syntax::{analyze::Analysis as SyntaxAnalysis, ast::App},
 };
-use proc_macro2::TokenStream as TokenStream2;
+use proc_macro2::{Span, TokenStream as TokenStream2};
 use quote::quote;
 use std::collections::HashSet;
 use syn::{parse, Attribute, Ident};
@@ -28,6 +28,10 @@ fn is_exception(name: &Ident) -> bool {
             | "PendSV"
             | "SysTick"
     )
+}
+pub fn interrupt_ident() -> Ident {
+    let span = Span::call_site();
+    Ident::new("interrupt", span)
 }
 
 #[cfg(feature = "cortex-m-source-masking")]

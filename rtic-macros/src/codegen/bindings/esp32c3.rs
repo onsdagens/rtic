@@ -8,7 +8,7 @@ mod esp32c3 {
         codegen::util,
         syntax::{analyze::Analysis as SyntaxAnalysis, ast::App},
     };
-    use proc_macro2::TokenStream as TokenStream2;
+    use proc_macro2::{Span, TokenStream as TokenStream2};
     use quote::quote;
     use std::collections::HashSet;
     use syn::{parse, Attribute, Ident};
@@ -48,6 +48,11 @@ mod esp32c3 {
                 }
             }
         )
+    }
+
+    pub fn interrupt_ident() -> Ident {
+        let span = Span::call_site();
+        Ident::new("Interrupt", span)
     }
 
     pub fn extra_assertions(_: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
