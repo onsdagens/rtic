@@ -1,11 +1,12 @@
-//! ...
-
 use core::marker::PhantomPinned;
 use core::pin::Pin;
 use core::sync::atomic::{AtomicPtr, Ordering};
 use critical_section as cs;
 
-/// A sorted linked list for the timer queue.
+/// An atomic sorted linked list for the timer queue.
+///
+/// Atomicity is guaranteed using very short [`critical_section`]s, so this list is _not_
+/// lock free, but it will not deadlock.
 pub(crate) struct LinkedList<T> {
     head: AtomicPtr<Link<T>>,
 }
@@ -92,7 +93,8 @@ impl<T: PartialOrd + Clone> LinkedList<T> {
     }
 
     /// Insert a new link into the linked list.
-    /// The return is (was_empty, address), where the address of the link is for use with `delete`.
+    /// The return is (updated head, address), where the address of the link is for use
+    /// with `delete`.
     ///
     /// SAFETY: The pinned link must live until it is removed from this list.
     pub unsafe fn insert(&self, val: Pin<&Link<T>>) -> (bool, usize) {
@@ -127,7 +129,7 @@ impl<T: PartialOrd + Clone> LinkedList<T> {
                 self.head
                     .store(val as *const _ as *mut _, Ordering::Relaxed);
 
-                return (false, addr);
+                return (true, addr);
             }
 
             // 3. search list for correct place

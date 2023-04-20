@@ -9,8 +9,8 @@
 //!
 //! # Minimum Supported Rust Version (MSRV)
 //!
-//! This crate is compiled and tested with the latest toolchain (rolling) as of the release date.
-//! If you run into compilation errors, try the latest stable release of the rust toolchain.
+//! This crate is compiled and tested with the latest nightly toolchain (rolling).
+//! If you run into compilation errors, try the latest nightly release of the rust toolchain.
 //!
 //! # Semantic Versioning
 //!
@@ -30,7 +30,6 @@
     html_logo_url = "https://raw.githubusercontent.com/rtic-rs/rtic/master/book/en/src/RTIC.svg",
     html_favicon_url = "https://raw.githubusercontent.com/rtic-rs/rtic/master/book/en/src/RTIC.svg"
 )]
-//deny_warnings_placeholder_for_ci
 #![allow(clippy::inline_always)]
 
 pub use rtic_core::{prelude as mutex_prelude, Exclusive, Mutex};

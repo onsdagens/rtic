@@ -141,7 +141,6 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
         let pend_interrupt = if priority > 0 {
             let interrupt_enum = interrupt_mod_ident();
             let interrupt = &analysis.interrupts.get(&priority).expect("UREACHABLE").0;
-
             quote!(rtic::export::pend(#interrupt_enum::#interrupt);)
         } else {
             quote!()
