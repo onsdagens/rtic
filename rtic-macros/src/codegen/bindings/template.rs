@@ -46,3 +46,11 @@ pub fn interrupt_exit(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStrea
 pub fn async_prio_limit(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
     vec![]
 }
+
+pub fn interrupt_mod_ident(_app: &App, _analysis: &SyntaxAnalysis) -> TokenStream2 {
+    quote!()
+}
+
+pub fn extra_modules(_app: &App, _analysis: &SyntaxAnalysis) -> Vec<TokenStream2> {
+    vec![]
+}

@@ -139,9 +139,9 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
         task_cfgs = cfgs.clone();
 
         let pend_interrupt = if priority > 0 {
-            let interrupt_enum = interrupt_mod_ident();
+            let interrupt_mod = interrupt_mod_ident(app, analysis);
             let interrupt = &analysis.interrupts.get(&priority).expect("UREACHABLE").0;
-            quote!(rtic::export::pend(#interrupt_enum::#interrupt);)
+            quote!(rtic::export::pend(#interrupt_mod::#interrupt);)
         } else {
             quote!()
         };

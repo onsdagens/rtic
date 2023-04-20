@@ -21,11 +21,6 @@ use quote::quote;
 use std::collections::HashSet;
 use syn::{parse, Attribute, Ident};
 
-/// Utility function to get the SLIC interrupt module.
-pub fn interrupt_mod_ident() -> TokenStream2 {
-    syn::parse_str("slic::Interrupt").unwrap()
-}
-
 /// This macro implements the [`rtic::Mutex`] trait for shared resources using the SLIC.
 #[allow(clippy::too_many_arguments)]
 pub fn impl_mutex(
@@ -66,23 +61,6 @@ pub fn impl_mutex(
 /// The Cortex-M implementations do not use it. Thus, we think we do not need it either.
 pub fn extra_assertions(_app: &App, _analysis: &SyntaxAnalysis) -> Vec<TokenStream2> {
     vec![]
-}
-
-/// The SLIC requires us to call to the [`riscv_rtic::codegen`] macro to generate
-/// the appropriate SLIC structure, interrupt enumerations, etc.
-pub fn extra_modules(app: &App, _analysis: &SyntaxAnalysis) -> Vec<TokenStream2> {
-    let mut stmts = vec![];
-
-    let hw_slice: Vec<_> = app
-        .hardware_tasks
-        .values()
-        .map(|task| &task.args.binds)
-        .collect();
-    let sw_slice: Vec<_> = app.args.dispatchers.keys().collect();
-    let device = &app.args.device;
-
-    stmts.push(quote!(rtic::export::codegen!(#device, [#(#hw_slice,)*], [#(#sw_slice,)*]);));
-    stmts
 }
 
 /// This macro is used to check at run-time that all the interruption dispatchers exist.
@@ -174,4 +152,26 @@ pub fn async_prio_limit(_app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStre
         #[no_mangle]
         static RTIC_ASYNC_MAX_LOGICAL_PRIO: u8 = #max;
     )]
+}
+
+/// Utility function to get the SLIC interrupt module.
+pub fn interrupt_mod_ident(_app: &App, _analysis: &SyntaxAnalysis) -> TokenStream2 {
+    syn::parse_str("slic::Interrupt").unwrap()
+}
+
+/// The SLIC requires us to call to the [`riscv_rtic::codegen`] macro to generate
+/// the appropriate SLIC structure, interrupt enumerations, etc.
+pub fn extra_modules(app: &App, _analysis: &SyntaxAnalysis) -> Vec<TokenStream2> {
+    let mut stmts = vec![];
+
+    let hw_slice: Vec<_> = app
+        .hardware_tasks
+        .values()
+        .map(|task| &task.args.binds)
+        .collect();
+    let sw_slice: Vec<_> = app.args.dispatchers.keys().collect();
+    let device = &app.args.device;
+
+    stmts.push(quote!(rtic::export::codegen!(#device, [#(#hw_slice,)*], [#(#sw_slice,)*]);));
+    stmts
 }

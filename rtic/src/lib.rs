@@ -46,7 +46,7 @@ pub mod mutex {
 pub mod export;
 
 /// HANDY RE-EXPORTS
-pub use export::{nop, pend};
+pub use export::pend;
 
 use core::cell::UnsafeCell;
 

@@ -171,16 +171,14 @@ mod basepri {
     }
 }
 
-pub fn pre_init_checks(app: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
+pub fn pre_init_checks(app: &App, analysis: &SyntaxAnalysis) -> Vec<TokenStream2> {
     let mut stmts = vec![];
 
     // check that all dispatchers exists in the `Interrupt` enumeration regardless of whether
     // they are used or not
-    let interrupt = util::interrupt_ident();
-    let rt_err = util::rt_err_ident();
-
+    let interrupt_mod = interrupt_mod_ident(app, analysis);
     for name in app.args.dispatchers.keys() {
-        stmts.push(quote!(let _ = #rt_err::#interrupt::#name;));
+        stmts.push(quote!(let _ = #interrupt_mod::#name;));
     }
 
     stmts
@@ -189,8 +187,7 @@ pub fn pre_init_checks(app: &App, _: &SyntaxAnalysis) -> Vec<TokenStream2> {
 pub fn pre_init_enable_interrupts(app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
     let mut stmts = vec![];
 
-    let interrupt = util::interrupt_ident();
-    let rt_err = util::rt_err_ident();
+    let interrupt_mod = interrupt_mod_ident(app, analysis);
     let device = &app.args.device;
     let nvic_prio_bits = quote!(#device::NVIC_PRIO_BITS);
     let interrupt_ids = analysis.interrupts.iter().map(|(p, (id, _))| (p, id));
@@ -214,14 +211,14 @@ pub fn pre_init_enable_interrupts(app: &App, analysis: &CodegenAnalysis) -> Vec<
 
         stmts.push(quote!(
             core.NVIC.set_priority(
-                #rt_err::#interrupt::#name,
+                #interrupt_mod::#name,
                 rtic::export::cortex_logical2hw(#priority, #nvic_prio_bits),
             );
         ));
 
         // NOTE unmask the interrupt *after* setting its priority: changing the priority of a pended
         // interrupt is implementation defined
-        stmts.push(quote!(rtic::export::NVIC::unmask(#rt_err::#interrupt::#name);));
+        stmts.push(quote!(rtic::export::NVIC::unmask(#interrupt_mod::#name);));
     }
 
     // Set exception priorities
@@ -337,4 +334,16 @@ pub fn async_prio_limit(app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStrea
         #[no_mangle]
         static RTIC_ASYNC_MAX_LOGICAL_PRIO: u8 = #max;
     )]
+}
+
+pub fn interrupt_mod_ident(_app: &App, _analysis: &SyntaxAnalysis) -> TokenStream2 {
+    let rt_err = util::rt_err_ident();
+
+    let span = proc_macro2::Span::call_site();
+    let enum_ = syn::Ident::new("interrupt", span);
+    quote::quote!(#rt_err::#enum_)
+}
+
+pub fn extra_modules(_app: &App, _analysis: &SyntaxAnalysis) -> Vec<TokenStream2> {
+    vec![]
 }
