@@ -58,20 +58,22 @@ impl<F: Future> AsyncTaskExecutor<F> {
     /// Checks if a waker has pended the executor and simultaneously clears the flag.
     #[inline(always)]
     fn check_and_clear_pending(&self) -> bool {
-        // Ordering::Acquire to enforce that update of task is visible to poll
-        #[cfg(feature = "riscv")]
-        let mut was_pended = false;
-        #[cfg(feature = "riscv")]
-        critical_section::with(|_cs| {
-            was_pended = self.pending.load(Ordering::Acquire);
-            self.pending.store(false, Ordering::Release);
-        });
-        #[cfg(feature = "riscv")]
-        return was_pended;
-        #[cfg(not(feature = "riscv"))]
-        self.pending
-            .compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed)
-            .is_ok()
+        match () {
+            #[cfg(feature = "riscv-e310x-backend")] // TODO should be for any riscv32imac target
+            () => {
+                let mut was_pended = false;
+                critical_section::with(|_cs| {
+                    was_pended = self.pending.load(Ordering::Acquire);
+                    self.pending.store(false, Ordering::Release);
+                });
+                was_pended
+            }
+            #[cfg(not(feature = "riscv-e310x-backend"))]
+            () => self
+                .pending
+                .compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed)
+                .is_ok(),
+        }
     }
 
     // Used by wakers to indicate that the executor needs to run.
@@ -83,22 +85,24 @@ impl<F: Future> AsyncTaskExecutor<F> {
     /// Allocate the executor. To use with `spawn`.
     #[inline(always)]
     pub unsafe fn try_allocate(&self) -> bool {
-        // Try to reserve the executor for a future.
-        #[cfg(feature = "riscv")]
-        let mut res: bool = false;
-        #[cfg(feature = "riscv")]
-        critical_section::with(|_cs| {
-            if self.running.load(Ordering::Acquire) == false {
-                self.running.store(true, Ordering::Release);
-                res = true;
+        match () {
+            #[cfg(feature = "riscv-e310x-backend")] // TODO should be for any riscv32imac target
+            () => {
+                let mut res: bool = false;
+                critical_section::with(|_cs| {
+                    if !self.running.load(Ordering::Acquire) {
+                        self.running.store(true, Ordering::Release);
+                        res = true;
+                    }
+                });
+                res
             }
-        });
-        #[cfg(feature = "riscv")]
-        return res;
-        #[cfg(not(feature = "riscv"))]
-        self.running
-            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Relaxed)
-            .is_ok()
+            #[cfg(not(feature = "riscv-e310x-backend"))]
+            () => self
+                .running
+                .compare_exchange(false, true, Ordering::AcqRel, Ordering::Relaxed)
+                .is_ok(),
+        }
     }
 
     /// Spawn a future
