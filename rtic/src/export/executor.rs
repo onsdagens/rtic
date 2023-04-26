@@ -59,6 +59,16 @@ impl<F: Future> AsyncTaskExecutor<F> {
     #[inline(always)]
     fn check_and_clear_pending(&self) -> bool {
         // Ordering::Acquire to enforce that update of task is visible to poll
+        #[cfg(feature = "riscv")]
+        let mut was_pended = false;
+        #[cfg(feature = "riscv")]
+        critical_section::with(|_cs| {
+            was_pended = self.pending.load(Ordering::Acquire);
+            self.pending.store(false, Ordering::Release);
+        });
+        #[cfg(feature = "riscv")]
+        return was_pended;
+        #[cfg(not(feature = "riscv"))]
         self.pending
             .compare_exchange(true, false, Ordering::Acquire, Ordering::Relaxed)
             .is_ok()
@@ -74,6 +84,18 @@ impl<F: Future> AsyncTaskExecutor<F> {
     #[inline(always)]
     pub unsafe fn try_allocate(&self) -> bool {
         // Try to reserve the executor for a future.
+        #[cfg(feature = "riscv")]
+        let mut res: bool = false;
+        #[cfg(feature = "riscv")]
+        critical_section::with(|_cs| {
+            if self.running.load(Ordering::Acquire) == false {
+                self.running.store(true, Ordering::Release);
+                res = true;
+            }
+        });
+        #[cfg(feature = "riscv")]
+        return res;
+        #[cfg(not(feature = "riscv"))]
         self.running
             .compare_exchange(false, true, Ordering::AcqRel, Ordering::Relaxed)
             .is_ok()
