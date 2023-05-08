@@ -33,6 +33,7 @@ pub fn app(analysis: analyze::Analysis, app: &App) -> Analysis {
         .map(|task| task.args.priority)
         .collect::<BTreeSet<_>>();
 
+
     // map from priorities to interrupts (holding name and attributes)
 
     let interrupts: BTreeMap<Priority, _> = priorities

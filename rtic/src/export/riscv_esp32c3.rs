@@ -139,14 +139,14 @@ pub fn unpend(int: Interrupt) {
 }
 const PRIORITY_TO_INTERRUPT: [usize; 15] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
-pub fn enable(int: Interrupt, prio: u8) {
+pub fn enable(int: Interrupt, prio: u8, cpu_interrupt:u8) {
     const INTERRUPT_MAP_BASE: u32 = 0x600c2000; //this isn't exposed properly in the PAC,
                                                 //should maybe figure out a workaround that
                                                 //doesnt involve raw pointers.
                                                 //Again, this is how they do it in the HAL
                                                 //but i'm really not a fan.
     let interrupt_number = int as isize;
-    let cpu_interrupt_number = prio as isize; //this is how they do it in the HAL, i'm not a huge fan but lack better ideas at the moment.
+    let cpu_interrupt_number = cpu_interrupt as isize; //this is how they do it in the HAL, i'm not a huge fan but lack better ideas at the moment.
     unsafe {
         let intr_map_base = INTERRUPT_MAP_BASE as *mut u32;
         intr_map_base
