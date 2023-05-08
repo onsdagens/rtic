@@ -17,15 +17,16 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
 
     for (name, task) in &app.hardware_tasks {
         let symbol = task.args.binds.clone();
+        let symbol_literal = quote!(#symbol).to_string() + "_handler";
         let priority = task.args.priority;
         let cfgs = &task.cfgs;
         let attrs = &task.attrs;
         let entry_stmts = interrupt_entry(app, analysis);
         let exit_stmts = interrupt_exit(app, analysis);
-
         mod_app.push(quote!(
             #[allow(non_snake_case)]
             #[no_mangle]
+            #[export_name=#symbol_literal]
             #(#attrs)*
             #(#cfgs)*
             unsafe fn #symbol() {

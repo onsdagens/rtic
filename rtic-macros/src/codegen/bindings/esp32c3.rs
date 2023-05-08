@@ -175,6 +175,9 @@ mod esp32c3 {
         let mut stmts = vec![];
         stmts.push(
             quote!(
+                unsafe {
+                    rtic::export::interrupt::disable(); // prio filtering is set up, now enable interrupts
+                }
                 let intr = &*esp32c3::INTERRUPT_CORE0::PTR;
                 intr.cpu_int_thresh.write(|w| w.bits(prev_interrupt_priority)); // set the prio
                                                                     // threshold to 1 more

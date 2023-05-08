@@ -63,6 +63,7 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
         }
 
         if level > 0 {
+            let symbol_literal = quote!(#dispatcher_name).to_string() + "_handler";
             let doc = format!("Interrupt handler to dispatch async tasks at priority {level}");
             let attribute = &interrupts.get(&level).expect("UNREACHABLE").1.attrs;
             let entry_stmts = interrupt_entry(app, analysis);
@@ -70,6 +71,7 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
             let async_entry_stmts = async_entry(app, analysis, dispatcher_name.clone());
             items.push(quote!(
                 #[allow(non_snake_case)]
+                #[export_name = #symbol_literal]
                 #[doc = #doc]
                 #[no_mangle]
                 #(#attribute)*
