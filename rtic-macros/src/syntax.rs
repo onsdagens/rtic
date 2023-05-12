@@ -6,6 +6,7 @@ use proc_macro::TokenStream;
 use indexmap::{IndexMap, IndexSet};
 use proc_macro2::TokenStream as TokenStream2;
 use syn::Ident;
+use core::ops::Deref;
 
 use crate::syntax::ast::App;
 
@@ -37,6 +38,7 @@ pub enum Context<'a> {
     HardwareTask(&'a Ident),
 }
 
+
 impl<'a> Context<'a> {
     /// The identifier of this context
     pub fn ident(&self, app: &'a App) -> &'a Ident {
@@ -47,6 +49,7 @@ impl<'a> Context<'a> {
             Context::SoftwareTask(ident) => ident,
         }
     }
+
 
     /// Is this the `idle` context?
     pub fn is_idle(&self) -> bool {
@@ -87,6 +90,20 @@ impl<'a> Context<'a> {
             Context::Init => !app.init.args.local_resources.is_empty(),
             Context::SoftwareTask(name) => {
                 !app.software_tasks[name].args.local_resources.is_empty()
+            }
+        }
+    }
+
+    pub fn size_of(&self, app: &App) -> usize{
+        match *self{
+            Context::HardwareTask(name) => {
+
+                app.hardware_tasks[name].args.local_resources.capacity() + app.hardware_tasks[name].args.shared_resources.capacity()
+            }
+            Context::Idle => app.idle.as_ref().unwrap().args.local_resources.capacity() + app.idle.as_ref().unwrap().args.shared_resources.capacity(),
+            Context::Init => app.init.args.local_resources.capacity(),
+            Context::SoftwareTask(name) => {
+                app.software_tasks[name].args.local_resources.capacity() + app.software_tasks[name].args.shared_resources.capacity()
             }
         }
     }

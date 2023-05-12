@@ -160,7 +160,14 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
                 // SAFETY: If `try_allocate` suceeds one must call `spawn`, which we do.
                 unsafe {
                     if #exec_name.try_allocate() {
-                        let f = #name(unsafe { #name::Context::new() } #(,#input_untupled)*);
+                        //rprintln!("{}", core::mem::size_of::<#name::Context>());
+                        //let c = unsafe{#name::Context::new()};
+                        //rprintln!("{}", *c as *const #name::Context);
+                      let c = unsafe{#name::Context::new()};
+                      rprintln!("{}", c.size_of());
+                      let f = #name(unsafe { c} #(,#input_untupled)*);
+                       // let f = #name(unsafe{#name::Context::new()});
+                        
                         #exec_name.spawn(f);
                         #pend_interrupt
 
