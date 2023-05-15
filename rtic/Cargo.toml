@@ -40,7 +40,7 @@ rtic-macros = { path = "../rtic-macros", version = "2.0.0-alpha.2" }
 rtic-core = "1"
 critical-section = "1"
 
-riscv = {git = "https://github.com/rust-embedded/riscv.git", branch = "peripheral-plic", optional = true}
+riscv = {git = "https://github.com/rust-embedded/riscv.git", branch = "master", optional = true}
 riscv-slic = {git = "https://github.com/romancardenas/riscv-slic", branch = "dev-plic", optional = true}
 e310x = { git = "https://github.com/greenlsi/e310x.git", branch = "master", optional = true }
 
