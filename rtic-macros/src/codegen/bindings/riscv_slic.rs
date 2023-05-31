@@ -171,7 +171,8 @@ pub fn extra_modules(app: &App, _analysis: &SyntaxAnalysis) -> Vec<TokenStream2>
         .collect();
     let sw_slice: Vec<_> = app.args.dispatchers.keys().collect();
     let device = &app.args.device;
-
+    //if(hw_slice.len() !=  0 || sw_slice.len() !=0){
     stmts.push(quote!(rtic::export::codegen!(#device, [#(#hw_slice,)*], [#(#sw_slice,)*]);));
+    //}
     stmts
 }
