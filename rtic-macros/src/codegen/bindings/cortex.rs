@@ -357,3 +357,11 @@ pub fn handler_config(
 ) -> Vec<TokenStream2> {
     vec![]
 }
+
+pub fn get_perip()->TokenStream2{
+    quote!(steal())
+}
+
+pub fn peripheral_access()->TokenStream2{
+    quote!(Peripherals)
+}

@@ -156,16 +156,11 @@ mod esp32c3 {
         stmts.push(
             quote!(
                 let interrupt_id: usize = rtic::export::mcause::read().code(); // MSB is whether its exception or interrupt.
-                let intr = &*esp32c3::INTERRUPT_CORE0::PTR;
-                let interrupt_priority = intr
-                    .cpu_int_pri_0
-                    .as_ptr()
-                    .offset(interrupt_id as isize)
-                    .read_volatile();
-                let prev_interrupt_priority = intr.cpu_int_thresh.read().bits();
-                intr.cpu_int_thresh
-                    .write(|w| w.bits(interrupt_priority + 1)); // set the prio threshold to 1 more than the prio of interrupt currently being
-                                                                // handled
+                let ic0 = esp32c3_ral::interrupt_core0::INTERRUPT_CORE0::instance();
+                let priority_addr = (0x600c2000 + 0x0114 + (interrupt_id*4)) as *mut u32;
+                let interrupt_priority = unsafe{priority_addr.read_volatile()};
+                let prev_interrupt_priority = rtic::export::read_reg!(esp32c3_ral::interrupt_core0, ic0, CPU_INT_THRESH);
+                rtic::export::write_reg!(esp32c3_ral::interrupt_core0, ic0, CPU_INT_THRESH, (interrupt_priority + 1).into());
                 unsafe {
                     rtic::export::interrupt::enable(); // prio filtering is set up, now enable interrupts
                 }
@@ -178,11 +173,8 @@ mod esp32c3 {
         let mut stmts = vec![];
         stmts.push(
             quote!(
-                let intr = &*esp32c3::INTERRUPT_CORE0::PTR;
-                intr.cpu_int_thresh.write(|w| w.bits(prev_interrupt_priority)); // set the prio
-                                                                    // threshold to 1 more
-                                                                    // than current
-                                                                    // interrupt prio
+                let ic0 = esp32c3_ral::interrupt_core0::INTERRUPT_CORE0::instance();
+                rtic::export::write_reg!(esp32c3_ral::interrupt_core0, ic0,CPU_INT_THRESH, prev_interrupt_priority );
             )
         );
         stmts
@@ -222,7 +214,6 @@ mod esp32c3 {
     ) -> Vec<TokenStream2> {
         let mut stmts = vec![];
         let mut curr_cpu_id = 1;
-        //let mut ret = "";
         let interrupt_ids = analysis.interrupts.iter().map(|(p, (id, _))| (p, id));
         for (&priority, name) in interrupt_ids.chain(
             app.hardware_tasks
@@ -237,7 +228,15 @@ mod esp32c3 {
             }
             curr_cpu_id += 1;
         }
+        //stmts.push(quote!(#[ram]));
 
         stmts
+    }
+    pub fn get_perip()->TokenStream2{
+        quote!(instances())
+    }
+    
+    pub fn peripheral_access()->TokenStream2{
+        quote!(Instances)
     }
 }

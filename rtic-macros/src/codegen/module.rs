@@ -2,6 +2,7 @@ use crate::syntax::{ast::App, Context};
 use crate::{analyze::Analysis, codegen::util};
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
+use crate::codegen::bindings::{peripheral_access, get_perip};
 
 #[allow(clippy::too_many_lines)]
 pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
@@ -11,14 +12,15 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
     let mut values = vec![];
     // Used to copy task cfgs to the whole module
     let mut task_cfgs = vec![];
-
+    let perips = peripheral_access();
+    let perip_get = get_perip();
     let name = ctxt.ident(app);
 
     match ctxt {
         Context::Init => {
             fields.push(quote!(
                 /// Core peripherals
-                pub core: rtic::export::Peripherals
+                pub core: rtic::export::#perips
             ));
 
             if app.args.peripherals {
@@ -26,10 +28,10 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
 
                 fields.push(quote!(
                     /// Device peripherals (PAC)
-                    pub device: #device::Peripherals
+                    pub device: #device::#perips
                 ));
 
-                values.push(quote!(device: #device::Peripherals::steal()));
+                values.push(quote!(device: #device::#perips::#perip_get));
             }
 
             fields.push(quote!(
@@ -92,7 +94,7 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
     };
 
     let core = if ctxt.is_init() {
-        Some(quote!(core: rtic::export::Peripherals,))
+        Some(quote!(core: rtic::export::#perips,))
     } else {
         None
     };
