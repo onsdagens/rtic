@@ -7,18 +7,16 @@ For each category, *Added*, *Changed*, *Fixed* add new entries at the top!
 
 ## [Unreleased]
 
+## [v2.0.1] - 2023-07-25
+
 ### Added
 
-### Changed
+- `init` and `idle` can now be externed.
 
 ### Fixed
 
-## [v1.0.1] - 2023-06-14
+- Support new TAIT syntax requirement.
 
-### Fixed
+## [v2.0.0] - 2023-05-31
 
-- `make_channel` could be UB
-
-## [v1.0.0] - 2023-05-31 - yanked 
-
-- Initial release
+- Initial v2 release
