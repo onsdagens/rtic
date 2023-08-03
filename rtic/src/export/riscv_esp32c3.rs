@@ -1,8 +1,6 @@
 use esp32c3::INTERRUPT_CORE0; //priority threshold control
 pub use esp32c3::{Interrupt, Peripherals};
-pub use esp32c3_hal::interrupt as hal_interrupt; //high level peripheral interrupt access
-use esp32c3_hal::interrupt::Priority; //need this for setting priority since the method takes an object and not a int
-pub use esp32c3_hal::riscv::interrupt; //low level interrupt enable/disable
+pub use riscv::{interrupt, register::mcause}; //low level interrupt enable/disable
 
 #[cfg(all(feature = "riscv-esp32c3", not(feature = "riscv-esp32c3-backend")))]
 compile_error!("Building for the esp32c3, but 'riscv-esp32c3-backend not selected'");
@@ -133,29 +131,34 @@ pub fn unpend(int: Interrupt) {
                 .SYSTEM
                 .cpu_intr_from_cpu_3
                 .write(|w| w.cpu_intr_from_cpu_3().bit(false)),
-            _ => panic!("Unsupported software interrupt"), //this should realistically never happen, since tasks that call unpend must call pend first.
+            _ => panic!("Unsupported software interrupt"),
         }
     }
 }
 
-pub fn int_to_prio(int: u8) -> Priority {
-    match (int) {
-        0 => Priority::None,
-        1 => Priority::Priority1,
-        2 => Priority::Priority2,
-        3 => Priority::Priority3,
-        4 => Priority::Priority4,
-        5 => Priority::Priority5,
-        6 => Priority::Priority6,
-        7 => Priority::Priority7,
-        8 => Priority::Priority8,
-        9 => Priority::Priority9,
-        10 => Priority::Priority10,
-        11 => Priority::Priority11,
-        12 => Priority::Priority12,
-        13 => Priority::Priority13,
-        14 => Priority::Priority14,
-        15 => Priority::Priority15,
-        _ => panic!(), //this should never happen, since it's checked at compile time.
+pub fn enable(int: Interrupt, prio: u8, cpu_int_id: u8) {
+    const INTERRUPT_MAP_BASE: u32 = 0x600c2000; //this isn't exposed properly in the PAC,
+                                                //should maybe figure out a workaround that
+                                                //doesnt involve raw pointers.
+                                                //Again, this is how they do it in the HAL
+                                                //but i'm really not a fan.
+    let interrupt_number = int as isize;
+    let cpu_interrupt_number = cpu_int_id as isize;
+
+    unsafe {
+        let intr_map_base = INTERRUPT_MAP_BASE as *mut u32;
+        intr_map_base
+            .offset(interrupt_number)
+            .write_volatile(cpu_interrupt_number as u32);
+        //map peripheral interrupt to CPU interrupt
+        (*INTERRUPT_CORE0::ptr())
+            .cpu_int_enable
+            .modify(|r, w| w.bits((1 << cpu_interrupt_number) | r.bits())); //enable the CPU interupt.
+        let intr = INTERRUPT_CORE0::ptr();
+        let intr_prio_base = (*intr).cpu_int_pri_0.as_ptr();
+
+        intr_prio_base
+            .offset(cpu_interrupt_number)
+            .write_volatile(prio as u32);
     }
 }
