@@ -73,6 +73,7 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
                 #[allow(non_snake_case)]
                 #[doc = #doc]
                 #[no_mangle]
+                #(#attribute)*
                 #(#config)*
                 unsafe fn #dispatcher_name() {
                     #(#entry_stmts)*

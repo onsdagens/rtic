@@ -12,7 +12,6 @@ mod esp32c3 {
     use quote::quote;
     use std::collections::HashSet;
     use syn::{parse, Attribute, Ident};
-    use super::*;
 
     #[allow(clippy::too_many_arguments)]
     pub fn impl_mutex(
@@ -152,19 +151,11 @@ mod esp32c3 {
     }
 
     pub fn interrupt_entry(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
-        let mut stmts = vec![];
-        stmts.push(
-            quote!()
-        );
-        stmts
+        vec![]
     }
 
     pub fn interrupt_exit(_app: &App, _analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
-        let mut stmts = vec![];
-        stmts.push(
-            quote!()
-        );
-        stmts
+        vec![]
     }
 
     pub fn async_entry(
@@ -203,7 +194,7 @@ mod esp32c3 {
         let mut curr_cpu_id = 1;
         //let mut ret = "";
         let interrupt_ids = analysis.interrupts.iter().map(|(p, (id, _))| (p, id));
-        for (&priority, name) in interrupt_ids.chain(
+        for (_, name) in interrupt_ids.chain(
             app.hardware_tasks
                 .values()
                 .filter_map(|task| Some((&task.args.priority, &task.args.binds))),

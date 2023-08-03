@@ -353,7 +353,7 @@ pub fn async_prio_limit(app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStrea
 pub fn handler_config(
     _app: &App,
     _analysis: &CodegenAnalysis,
-    dispatcher_name: Ident,
+    _dispatcher_name: Ident,
 ) -> Vec<TokenStream2> {
     vec![]
 }

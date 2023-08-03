@@ -135,7 +135,6 @@ pub fn unpend(int: Interrupt) {
         }
     }
 }
-const PRIORITY_TO_INTERRUPT: [usize; 15] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
 pub fn enable(int: Interrupt, prio: u8, cpu_int_id: u8) {
     const INTERRUPT_MAP_BASE: u32 = 0x600c2000; //this isn't exposed properly in the PAC,
