@@ -8,7 +8,6 @@ For each category, *Added*, *Changed*, *Fixed* add new entries at the top!
 ## [Unreleased]
 
 ### Added
-- Allow #[init] and #[idle] to be defined externally
 - Unstable support for ESP32-C3
 
 ### Fixed
@@ -30,7 +29,6 @@ For each category, *Added*, *Changed*, *Fixed* add new entries at the top!
 - `cortex-m` set as an optional dependency
 - Moved `cortex-m`-related utilities from `rtic/lib.rs` to `rtic/export.rs`
 - Make async task priorities start at 0, instead of 1, to always start at the lowest priority
-- ESP32-C3 support added
 
 ## [v2.0.0] - 2023-05-31
 
