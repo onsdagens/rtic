@@ -1,6 +1,7 @@
-use clic::peripherals::{Peripherals, CLIC}; //priority threshold control
-use clic::interrupt::Interrupts;
-use clic::register::mintthresh;
+pub use clic::peripherals::{Peripherals, CLIC}; //priority threshold control
+pub use clic::interrupt::Interrupt;
+pub use clic::register::mintthresh;
+pub use riscv::interrupt;
 
 #[cfg(all(feature = "riscv-clic", not(feature = "riscv-clic-backend")))]
 compile_error!("Building for the esp32c3, but 'riscv-esp32c3-backend not selected'");
@@ -69,16 +70,16 @@ pub unsafe fn lock<T, R>(ptr: *mut T, ceiling: u8, f: impl FnOnce(&mut T) -> R) 
 
 /// Sets the given software interrupt as pending
 #[inline(always)]
-pub fn pend(int: Interrupts) {
+pub fn pend(int: Interrupt) {
     CLIC::pend(int);
 }
 
 // Sets the given software interrupt as not pending
-pub fn unpend(int: Interrupts) {
+pub fn unpend(int: Interrupt) {
     CLIC::unpend(int)
 }
 
-pub fn enable(int: Interrupts, prio: u8, cpu_int_id: u8) {
+pub fn enable(int: Interrupt, prio: u8, cpu_int_id: u8) {
     unsafe{
         Peripherals::steal().CLIC.set_priority(int, prio);
         CLIC::unmask(int);

@@ -1,4 +1,5 @@
 #[cfg(feature = "riscv-clic")]
+pub use riscvclic::*;
 
 #[cfg(feature = "riscv-clic")]
 mod riscvclic {
@@ -175,7 +176,7 @@ mod riscvclic {
         } else {
             // No limit
             let device = &app.args.device;
-            quote!(1 << #device::NVIC_PRIO_BITS)
+            quote!(1 << 7)
         };
 
         vec![quote!(
@@ -190,7 +191,7 @@ mod riscvclic {
         dispatcher_name: Ident,
     ) -> Vec<TokenStream2> {
         let mut stmts = vec![];
-        let mut curr_cpu_id = 1;
+        let mut curr_cpu_id = 0;
         let interrupt_ids = analysis.interrupts.iter().map(|(p, (id, _))| (p, id));
         for (_, name) in interrupt_ids.chain(
             app.hardware_tasks
