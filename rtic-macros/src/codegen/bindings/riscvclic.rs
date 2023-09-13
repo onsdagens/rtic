@@ -35,7 +35,7 @@ mod riscvclic {
 
                 #[inline(always)]
                 fn lock<RTIC_INTERNAL_R>(&mut self, f: impl FnOnce(&mut #ty) -> RTIC_INTERNAL_R) -> RTIC_INTERNAL_R {
-                    /// Priority ceiling
+                    /// Priority ceiling 
                     const CEILING: u8 = #ceiling;
                     unsafe {
                         rtic::export::lock(
