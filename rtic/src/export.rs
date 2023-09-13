@@ -37,6 +37,11 @@ mod riscv_esp32c3;
 #[cfg(feature = "riscv-esp32c3")]
 pub use riscv_esp32c3::*;
 
+#[cfg(feature = "riscv-clic")]
+mod riscv_clic;
+#[cfg(feature = "riscv-clic")]
+pub use riscv_clic::*;
+
 #[inline(always)]
 pub fn assert_send<T>()
 where

@@ -34,7 +34,7 @@ default = []
 cortex-m-source-masking = []
 cortex-m-basepri = []
 riscv-esp32c3 = []
-# riscv-clic = []
+riscv-clic = []
 # riscv-ch32 = []
 
 
