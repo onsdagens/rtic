@@ -9,11 +9,11 @@ use core::{
 
 static WAKER_VTABLE: RawWakerVTable =
     RawWakerVTable::new(waker_clone, waker_wake, waker_wake, waker_drop);
-
+#[link_section = ".trap"]
 unsafe fn waker_clone(p: *const ()) -> RawWaker {
     RawWaker::new(p, &WAKER_VTABLE)
 }
-
+#[link_section = ".trap"]
 unsafe fn waker_wake(p: *const ()) {
     // The only thing we need from a waker is the function to call to pend the async
     // dispatcher.
@@ -21,6 +21,7 @@ unsafe fn waker_wake(p: *const ()) {
     f();
 }
 
+#[link_section = ".trap"]
 unsafe fn waker_drop(_: *const ()) {
     // nop
 }
