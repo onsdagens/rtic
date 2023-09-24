@@ -28,6 +28,8 @@
 
 pub use rtic_time::{Monotonic, TimeoutError, TimerQueue};
 
+pub mod esp32c3;
+
 #[cfg(feature = "cortex-m-systick")]
 pub mod systick;
 
