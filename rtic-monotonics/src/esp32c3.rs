@@ -220,7 +220,7 @@ macro_rules! create_systick_token {
         #[allow(non_snake_case)]
         unsafe extern "C" fn SysTick() {
             use esp32c3::Peripherals;
-           // rprintln!("Systick");
+            rprintln!("Systick");
            // unsafe{Peripherals::steal()}.SYSTIMER.int_clr.write(|w|w.target0_int_clr().set_bit());
             rtic_monotonics::esp32c3::Systick::__tq().on_monotonic_interrupt();
         }
