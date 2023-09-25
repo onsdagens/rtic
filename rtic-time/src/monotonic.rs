@@ -17,12 +17,13 @@ pub trait Monotonic {
         + Copy
         + core::ops::Add<Self::Duration, Output = Self::Instant>
         + core::ops::Sub<Self::Duration, Output = Self::Instant>
-        + core::ops::Sub<Self::Instant, Output = Self::Duration>;
+        + core::ops::Sub<Self::Instant, Output = Self::Duration>
+        + core::fmt::Debug;
 
     /// The type for duration, defining an duration of time.
     ///
     /// **Note:** In all APIs in RTIC that use duration from this monotonic, this type will be used.
-    type Duration;
+    type Duration: core::fmt::Debug;
 
     /// Get the current time.
     fn now() -> Self::Instant;

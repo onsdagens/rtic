@@ -42,6 +42,7 @@ nrf9160-pac = { version = "0.12.2", optional = true }
 
 # ESP32C3
 esp32c3 = "0.17.0"
+rtt-target = {version = "0.3.1", features=["riscv"]}
 [features]
 default = []
 defmt = ["fugit/defmt"]

@@ -72,7 +72,7 @@ impl Systick {
         assert!(reload > 0);
         systick.target0_conf.write(|w|w.target0_timer_unit_sel().clear_bit()); //select unit0 for
         //comp
-        unsafe{systick.target0_conf.write(|w|w.target0_period().bits(160_000_000));} //set comp
+        unsafe{systick.target0_conf.write(|w|w.target0_period().bits(160_000));} //set comp
         //value, 16MHZ/160k = 100Hz
         systick.comp0_load.write(|w|w.timer_comp0_load().set_bit()); //sync period to comp register 
         systick.target0_conf.write(|w|w.target0_period_mode().set_bit()); //enable period mode
@@ -157,12 +157,17 @@ impl Monotonic for Systick {
     type Instant = fugit::TimerInstantU32<TIMER_HZ>;
     type Duration = fugit::TimerDurationU32<TIMER_HZ>;
     const ZERO: Self::Instant = Self::Instant::from_ticks(0);
-
     fn now() -> Self::Instant {
         //if Self::systick().has_wrapped() {
         //    SYSTICK_CNT.fetch_add(1, Ordering::AcqRel);
         //}
-        Self::Instant::from_ticks(unsafe{esp32c3::Peripherals::steal()}.SYSTIMER.unit0_value_lo.read().bits())
+        use rtt_target::rprintln;
+        let peripherals = unsafe{esp32c3::Peripherals::steal()};
+        peripherals.SYSTIMER.unit0_op.write(|w|w.timer_unit0_update().set_bit()); //load the timer
+        //val
+        let instant = unsafe{esp32c3::Peripherals::steal()}.SYSTIMER.unit0_value_lo.read().bits();
+        //rprintln!("{}", instant);
+        Self::Instant::from_ticks(instant/160000)
         //Self::Instant::from_ticks(SYSTICK_CNT.load(Ordering::Relaxed))
     }
 
@@ -215,7 +220,7 @@ macro_rules! create_systick_token {
         #[allow(non_snake_case)]
         unsafe extern "C" fn SysTick() {
             use esp32c3::Peripherals;
-            rprintln!("Systick");
+           // rprintln!("Systick");
            // unsafe{Peripherals::steal()}.SYSTIMER.int_clr.write(|w|w.target0_int_clr().set_bit());
             rtic_monotonics::esp32c3::Systick::__tq().on_monotonic_interrupt();
         }

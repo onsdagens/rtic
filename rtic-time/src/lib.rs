@@ -195,8 +195,9 @@ impl<Mono: Monotonic> TimerQueue<Mono> {
     /// Delay for some duration of time.
     #[inline]
     pub async fn delay(&self, duration: Mono::Duration) {
+        //use rtt_target::rprintln;
         let now = Mono::now();
-
+        //rprintln!("Delay: Now:{:?}, Duration:{:?}", now, duration);
         self.delay_until(now + duration).await;
     }
 
