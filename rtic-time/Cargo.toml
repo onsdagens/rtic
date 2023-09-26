@@ -21,6 +21,7 @@ critical-section = "1"
 futures-util = { version = "0.3.25", default-features = false }
 rtic-common = { version = "1.0.0", path = "../rtic-common" }
 rtt-target = {version= "0.3.1", features = ["riscv"]}
+portable-atomic = { version = "1", default-features = false }
 
 [dev-dependencies]
 parking_lot = "0.12"

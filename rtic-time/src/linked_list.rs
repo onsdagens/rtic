@@ -1,6 +1,6 @@
 use core::marker::PhantomPinned;
 use core::pin::Pin;
-use core::sync::atomic::{AtomicPtr, Ordering};
+use portable_atomic::{AtomicPtr, Ordering};
 use critical_section as cs;
 
 /// An atomic sorted linked list for the timer queue.
