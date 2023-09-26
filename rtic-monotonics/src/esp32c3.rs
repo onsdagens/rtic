@@ -158,17 +158,10 @@ impl Monotonic for Systick {
     type Duration = fugit::TimerDurationU32<TIMER_HZ>;
     const ZERO: Self::Instant = Self::Instant::from_ticks(0);
     fn now() -> Self::Instant {
-        //if Self::systick().has_wrapped() {
-        //    SYSTICK_CNT.fetch_add(1, Ordering::AcqRel);
-        //}
-        use rtt_target::rprintln;
         let peripherals = unsafe{esp32c3::Peripherals::steal()};
         peripherals.SYSTIMER.unit0_op.write(|w|w.timer_unit0_update().set_bit()); //load the timer
-        //val
         let instant = unsafe{esp32c3::Peripherals::steal()}.SYSTIMER.unit0_value_lo.read().bits();
-        //rprintln!("{}", instant);
         Self::Instant::from_ticks(instant/160000)
-        //Self::Instant::from_ticks(SYSTICK_CNT.load(Ordering::Relaxed))
     }
 
     fn set_compare(_: Self::Instant) {
@@ -178,23 +171,21 @@ impl Monotonic for Systick {
     fn clear_compare_flag() {
         use esp32c3::Peripherals;
         unsafe{Peripherals::steal()}.SYSTIMER.int_clr.write(|w|w.target0_int_clr().set_bit());
-        // NOOP with SysTick interrupt
     }
 
     fn pend_interrupt() {
-        //cortex_m::peripheral::SCB::set_pendst();
         extern "C" {
         fn cpu_int_31_handler();
         }
+        //run the timer interrupt handler in a critical section to emulate a max priority
+        //interrupt.
+        //since there is no hardware support for pending a timer interrupt.
         unsafe{riscv::interrupt::disable()};
         unsafe{cpu_int_31_handler()};
         unsafe{riscv::interrupt::enable()};
     }
 
     fn on_interrupt() {
-        //if Self::systick().has_wrapped() {
-        //    SYSTICK_CNT.fetch_add(1, Ordering::AcqRel);
-        //}
     }
 
     fn enable_timer() {}
@@ -220,9 +211,6 @@ macro_rules! create_systick_token {
         #[export_name="cpu_int_31_handler"]
         #[allow(non_snake_case)]
         unsafe extern "C" fn SysTick() {
-            use esp32c3::Peripherals;
-            //rprintln!("Systick");
-           // unsafe{Peripherals::steal()}.SYSTIMER.int_clr.write(|w|w.target0_int_clr().set_bit());
             rtic_monotonics::esp32c3::Systick::__tq().on_monotonic_interrupt();
         }
 

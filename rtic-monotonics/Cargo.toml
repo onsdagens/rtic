@@ -45,7 +45,6 @@ nrf9160-pac = { version = "0.12.2", optional = true }
 # ESP32C3
 riscv = "0.10.1"
 esp32c3 = "0.17.0"
-rtt-target = {version = "0.3.1", features=["riscv"]}
 # STM32
 stm32-metapac = { version = "13.0.0", features = ["metadata"], optional = true }
 [features]
