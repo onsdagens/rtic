@@ -132,7 +132,7 @@ impl<Mono: Monotonic> TimerQueue<Mono> {
             let mut release_at = None;
             let head = self.queue.pop_if(|head| {
                 release_at = Some(head.release_at);
-
+                rtt_target::rprintln!("pop");
                 let should_pop = Mono::should_dequeue_check(head.release_at);
                 head.was_popped.store(should_pop, Ordering::Relaxed);
 
@@ -195,7 +195,7 @@ impl<Mono: Monotonic> TimerQueue<Mono> {
     /// Delay for some duration of time.
     #[inline]
     pub async fn delay(&self, duration: Mono::Duration) {
-        //use rtt_target::rprintln;
+        rtt_target::rprintln!("delay");
         let now = Mono::now();
         //rprintln!("Delay: Now:{:?}, Duration:{:?}", now, duration);
         self.delay_until(now + duration).await;
@@ -226,9 +226,10 @@ impl<Mono: Monotonic> TimerQueue<Mono> {
 
         poll_fn(|cx| {
             if Mono::now() >= instant {
+                rtt_target::rprintln!("ready");
                 return Poll::Ready(());
             }
-
+            rtt_target::rprintln!("polling");
             // SAFETY: This pointer is only dereferenced here and on drop of the future
             // which happens outside this `poll_fn`'s stack frame, so this mutable access cannot
             // happen at the same time as `dropper` runs.

@@ -101,7 +101,7 @@ impl Systick {
 
             intr_prio_base
                 .offset(cpu_interrupt_number)
-                .write_volatile(10 as u32);
+                .write_volatile(15 as u32);
         }
 
         SYSTICK_TIMER_QUEUE.initialize(Systick {});
@@ -186,8 +186,9 @@ impl Monotonic for Systick {
         extern "C" {
         fn cpu_int_31_handler();
         }
-
+        unsafe{riscv::interrupt::disable()};
         unsafe{cpu_int_31_handler()};
+        unsafe{riscv::interrupt::enable()};
     }
 
     fn on_interrupt() {
@@ -220,7 +221,7 @@ macro_rules! create_systick_token {
         #[allow(non_snake_case)]
         unsafe extern "C" fn SysTick() {
             use esp32c3::Peripherals;
-            rprintln!("Systick");
+            //rprintln!("Systick");
            // unsafe{Peripherals::steal()}.SYSTIMER.int_clr.write(|w|w.target0_int_clr().set_bit());
             rtic_monotonics::esp32c3::Systick::__tq().on_monotonic_interrupt();
         }
