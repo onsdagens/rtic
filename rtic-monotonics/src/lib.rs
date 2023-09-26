@@ -46,6 +46,10 @@ pub mod rp2040;
 ))]
 pub mod nrf;
 
+// Notice that `stm32` is not a feature, it is a compilation flag set in build.rs.
+#[cfg(stm32)]
+pub mod stm32;
+
 #[allow(dead_code)]
 pub(crate) const fn cortex_logical2hw(logical: u8, nvic_prio_bits: u8) -> u8 {
     ((1 << nvic_prio_bits) - logical) << (8 - nvic_prio_bits)
@@ -61,6 +65,7 @@ pub(crate) const fn cortex_logical2hw(logical: u8, nvic_prio_bits: u8) -> u8 {
     feature = "nrf5340-app",
     feature = "nrf5340-net",
     feature = "nrf9160",
+    stm32,
 ))]
 pub(crate) unsafe fn set_monotonic_prio(
     prio_bits: u8,
