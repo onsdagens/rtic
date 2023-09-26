@@ -41,6 +41,7 @@ nrf5340-net-pac = { version = "0.12.2", optional = true }
 nrf9160-pac = { version = "0.12.2", optional = true }
 
 # ESP32C3
+riscv = "0.10.1"
 esp32c3 = "0.17.0"
 rtt-target = {version = "0.3.1", features=["riscv"]}
 [features]
