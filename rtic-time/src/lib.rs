@@ -10,7 +10,6 @@
 
 use core::future::{poll_fn, Future};
 use core::pin::Pin;
-use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use core::task::{Poll, Waker};
 use futures_util::{
     future::{select, Either},
@@ -18,6 +17,7 @@ use futures_util::{
 };
 use linked_list::{Link, LinkedList};
 pub use monotonic::Monotonic;
+use portable_atomic::{AtomicBool, AtomicUsize, Ordering};
 use rtic_common::dropper::OnDrop;
 
 mod linked_list;
