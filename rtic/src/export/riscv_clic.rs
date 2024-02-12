@@ -1,33 +1,16 @@
 pub use clic::peripherals::{Peripherals, CLIC}; //priority threshold control
 pub use clic::interrupt::Interrupt;
 pub use clic::register::mintthresh;
-pub use riscv::interrupt;
 
 #[cfg(all(feature = "riscv-clic", not(feature = "riscv-clic-backend")))]
-compile_error!("Building for the esp32c3, but 'riscv-esp32c3-backend not selected'");
+compile_error!("Building for the CLIC, but 'riscv-clic-backend not selected'");
 
 #[inline(always)]
 pub fn run<F>(priority: u8, f: F)
 where
     F: FnOnce(),
 {
-    if priority == 1 {
-        //if priority is 1, priority thresh should be 1
-        f();
-        unsafe {
-            mintthresh::write(1);
-        }
-    } else {
-        //read current thresh
-        let initial = unsafe {
-            mintthresh::read()
-        };
-        f();
-        //write back old thresh
-        unsafe {
-            mintthresh::write(initial);
-        }
-    }
+    f();
 }
 
 /// Lock implementation using threshold and global Critical Section (CS)
@@ -53,17 +36,10 @@ pub unsafe fn lock<T, R>(ptr: *mut T, ceiling: u8, f: impl FnOnce(&mut T) -> R) 
         let r = critical_section::with(|_| f(&mut *ptr));
         r
     } else {
-        let current = unsafe {
-            mintthresh::read()
-        };
-
-        unsafe {
-            mintthresh::write((ceiling+1)as usize)
-        } //esp32c3 lets interrupts with prio equal to threshold through so we up it by one
+        let current = mintthresh::read();
+        mintthresh::write((ceiling+1)as usize);
         let r = f(&mut *ptr);
-        unsafe {
-            mintthresh::write(current)
-        }
+        mintthresh::write(current);
         r
     }
 }
@@ -71,17 +47,18 @@ pub unsafe fn lock<T, R>(ptr: *mut T, ceiling: u8, f: impl FnOnce(&mut T) -> R) 
 /// Sets the given software interrupt as pending
 #[inline(always)]
 pub fn pend(int: Interrupt) {
-    CLIC::pend(int);
+    unsafe{Peripherals::steal().CLIC.pend(int)};
 }
 
 // Sets the given software interrupt as not pending
 pub fn unpend(int: Interrupt) {
-    CLIC::unpend(int)
+    unsafe{Peripherals::steal().CLIC.unpend(int)}
 }
 
-pub fn enable(int: Interrupt, prio: u8, cpu_int_id: u8) {
+pub fn enable(int: Interrupt, prio: u8) {
     unsafe{
-        Peripherals::steal().CLIC.set_priority(int, prio);
-        CLIC::unmask(int);
+        let mut p = Peripherals::steal();
+        p.CLIC.set_priority(int, prio);
+        p.CLIC.unmask(int);
     }
 }

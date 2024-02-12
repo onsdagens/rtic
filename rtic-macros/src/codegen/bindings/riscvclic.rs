@@ -72,7 +72,7 @@ mod riscvclic {
     }
     pub fn pre_init_enable_interrupts(app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
         let mut stmts = vec![];
-        let mut curr_cpu_id:u8 = 1; //cpu interrupt id 0 is reserved
+
         let rt_err = util::rt_err_ident();
         let max_prio: usize = 15; //unfortunately this is not part of pac, but we know that max prio is 15.
         let interrupt_ids = analysis.interrupts.iter().map(|(p, (id, _))| (p, id));
@@ -93,10 +93,9 @@ mod riscvclic {
                 rtic::export::enable(
                     #rt_err::Interrupt::#name,
                     #priority,
-                    #curr_cpu_id,
                 );
             ));
-            curr_cpu_id += 1;
+
         }
         stmts
     }
@@ -161,21 +160,17 @@ mod riscvclic {
     pub fn async_entry(
         _app: &App,
         _analysis: &CodegenAnalysis,
-        dispatcher_name: Ident,
+        _dispatcher_name: Ident,
     ) -> Vec<TokenStream2> {
-        let mut stmts = vec![];
-        stmts.push(quote!(
-            rtic::export::unpend(rtic::export::Interrupt::#dispatcher_name); //simulate cortex-m behavior by unpending the interrupt on entry.
-        ));
-        stmts
+        vec![]
     }
 
-    pub fn async_prio_limit(app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
+    pub fn async_prio_limit(_app: &App, analysis: &CodegenAnalysis) -> Vec<TokenStream2> {
         let max = if let Some(max) = analysis.max_async_prio {
             quote!(#max)
         } else {
             // No limit
-            let device = &app.args.device;
+           // let device = &app.args.device;
             quote!(1 << 7)
         };
 
@@ -190,23 +185,6 @@ mod riscvclic {
         analysis: &CodegenAnalysis,
         dispatcher_name: Ident,
     ) -> Vec<TokenStream2> {
-        let mut stmts = vec![];
-        let mut curr_cpu_id = 0;
-        let interrupt_ids = analysis.interrupts.iter().map(|(p, (id, _))| (p, id));
-        for (_, name) in interrupt_ids.chain(
-            app.hardware_tasks
-                .values()
-                .filter_map(|task| Some((&task.args.priority, &task.args.binds))),
-        ) {
-            if *name == dispatcher_name{
-                let ret = &("_interrupt".to_owned()+&curr_cpu_id.to_string());
-                stmts.push(
-                    quote!(#[export_name = #ret])
-                );
-            }
-            curr_cpu_id += 1;
-        }
-
-        stmts
+        vec![]
     }
 }
