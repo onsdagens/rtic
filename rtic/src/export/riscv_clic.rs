@@ -1,6 +1,7 @@
 pub use clic::peripherals::{Peripherals, CLIC}; //priority threshold control
 pub use clic::interrupt::Interrupt;
 pub use clic::register::mintthresh;
+use clic::Pend;
 
 #[cfg(all(feature = "riscv-clic", not(feature = "riscv-clic-backend")))]
 compile_error!("Building for the CLIC, but 'riscv-clic-backend not selected'");
