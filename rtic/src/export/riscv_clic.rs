@@ -46,8 +46,8 @@ pub unsafe fn lock<T, R>(ptr: *mut T, ceiling: u8, f: impl FnOnce(&mut T) -> R) 
 
 /// Sets the given software interrupt as pending
 #[inline(always)]
-pub fn pend(int: Interrupt) {
-    unsafe{Peripherals::steal().CLIC.pend(int)};
+pub fn pend<T: Pend>(int: T) {
+    unsafe{<T as Pend>::pend_int()};
 }
 
 // Sets the given software interrupt as not pending
