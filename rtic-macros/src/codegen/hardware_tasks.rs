@@ -37,7 +37,7 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
 
                 rtic::export::run(PRIORITY, || {
                     #name(
-                        #name::Context::new()
+                        #name::Context::new(&rtic::export::Priority::new(PRIORITY))
                     )
                 });
 

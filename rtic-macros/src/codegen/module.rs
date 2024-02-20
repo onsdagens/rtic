@@ -52,7 +52,6 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
             #[doc(inline)]
             pub use super::#ident as LocalResources;
         ));
-
         fields.push(quote!(
             /// Local Resources this task has access to
             pub local: #name::LocalResources<'a>
@@ -73,7 +72,10 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
             /// Shared Resources this task has access to
             pub shared: #name::SharedResources<'a>
         ));
-
+        fields.push(quote!(
+            pub priority: rtic::export::Priority<&'a>
+        ));
+        values.push(quote!(priority));
         values.push(quote!(shared: #name::SharedResources::new()));
     }
 
@@ -90,13 +92,23 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
         Context::SoftwareTask(t) => &app.software_tasks[t].cfgs,
         _ => &v,
     };
-
+    let priority = if ctxt.has_shared_resources(app) {
+        Some(quote!(priority: &'a rtic::export::Priority,))
+    }
+    else {
+        None
+    };
     let core = if ctxt.is_init() {
         Some(quote!(core: rtic::export::Peripherals,))
     } else {
         None
     };
-
+    let lt = if ctxt.has_shared_resources(app) {
+        Some(quote!(<'a>))
+    }
+    else {
+        None
+    };
     let internal_context_name = util::internal_task_ident(name, "Context");
     let exec_name = util::internal_task_ident(name, "EXEC");
 
@@ -115,7 +127,7 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
         impl<'a> #internal_context_name<'a> {
             #[inline(always)]
             #[allow(missing_docs)]
-            pub unsafe fn new(#core) -> Self {
+            pub unsafe fn new(#core #priority) -> Self {
                 #internal_context_name {
                     __rtic_internal_p: ::core::marker::PhantomData,
                     #(#values,)*
