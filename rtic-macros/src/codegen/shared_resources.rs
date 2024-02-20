@@ -51,13 +51,14 @@ pub fn codegen(app: &App, analysis: &Analysis) -> TokenStream2 {
                 #(#cfgs)*
                 pub struct #shared_name<'a> {
                     __rtic_internal_p: ::core::marker::PhantomData<&'a ()>,
+                    pub priority: &'a rtic::export::Priority,
                 }
 
                 #(#cfgs)*
                 impl<'a> #shared_name<'a> {
                     #[inline(always)]
-                    pub unsafe fn new() -> Self {
-                        #shared_name { __rtic_internal_p: ::core::marker::PhantomData }
+                    pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
+                        #shared_name { __rtic_internal_p: ::core::marker::PhantomData, priority }
                     }
                 }
             ));

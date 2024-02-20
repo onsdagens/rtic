@@ -73,10 +73,10 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
             pub shared: #name::SharedResources<'a>
         ));
         fields.push(quote!(
-            pub priority: rtic::export::Priority<&'a>
+            pub priority: &'a rtic::export::Priority
         ));
         values.push(quote!(priority));
-        values.push(quote!(shared: #name::SharedResources::new()));
+        values.push(quote!(shared: #name::SharedResources::new(priority)));
     }
 
     let doc = match ctxt {

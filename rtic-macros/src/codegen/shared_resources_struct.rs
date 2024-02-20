@@ -65,7 +65,7 @@ pub fn codegen(ctxt: Context, app: &App) -> (TokenStream2, TokenStream2) {
 
             values.push(quote!(
                 #(#cfgs)*
-                #name: shared_resources::#shared_name::new()
+                #name: shared_resources::#shared_name::new(priority)
 
             ));
 
@@ -92,6 +92,12 @@ pub fn codegen(ctxt: Context, app: &App) -> (TokenStream2, TokenStream2) {
 
     values.push(quote!(__rtic_internal_marker: core::marker::PhantomData));
 
+    fields.push(quote!(
+        pub priority: &'a rtic::export::Priority
+    ));
+
+    values.push(quote!(priority: priority));
+
     let doc = format!("Shared resources `{}` has access to", ctxt.ident(app));
     let ident = util::shared_resources_ident(ctxt, app);
     let item = quote!(
@@ -107,7 +113,7 @@ pub fn codegen(ctxt: Context, app: &App) -> (TokenStream2, TokenStream2) {
         impl<'a> #ident<'a> {
             #[inline(always)]
             #[allow(missing_docs)]
-            pub unsafe fn new() -> Self {
+            pub unsafe fn new(priority: &'a rtic::export::Priority) -> Self {
                 #ident {
                     #(#values,)*
                 }

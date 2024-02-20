@@ -41,6 +41,7 @@ mod riscvclic {
                     unsafe {
                         rtic::export::lock(
                             #ptr,
+                            self.priority,
                             CEILING,
                             f,
                         )
