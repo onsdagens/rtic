@@ -1,8 +1,9 @@
-pub use clic::peripherals::{Peripherals, CLIC}; //priority threshold control
-pub use clic::interrupt::Interrupt;
-pub use clic::register::mintthresh;
-use clic::Pend;
+//pub use hippomenes_core::mintthresh;
 use core::cell::Cell;
+use core::mem::transmute;
+use hippomenes_core::mintthresh;
+use hippomenes_core::Interrupt;
+pub use hippomenes_core::Peripherals;
 #[cfg(all(feature = "riscv-clic", not(feature = "riscv-clic-backend")))]
 compile_error!("Building for the CLIC, but 'riscv-clic-backend not selected'");
 
@@ -54,36 +55,40 @@ impl Priority {
 /// It is merely used in order to omit masking in case current
 /// priority is current priority >= ceiling.
 #[inline(always)]
-pub unsafe fn lock<T, R>(ptr: *mut T,priority: &Priority, ceiling: u8, f: impl FnOnce(&mut T) -> R) -> R {
+pub unsafe fn lock<T, R>(
+    ptr: *mut T,
+    priority: &Priority,
+    ceiling: u8,
+    f: impl FnOnce(&mut T) -> R,
+) -> R {
     let current = priority.get();
     if current < ceiling {
         priority.set(ceiling);
-        mintthresh::write(ceiling as usize);
+        //mintthresh::Bits::write(ceiling.into());
+        mintthresh::Priority::write_field(unsafe { transmute(ceiling) });
         let r = f(&mut *ptr);
-        mintthresh::write(current as usize);
+        mintthresh::Priority::write_field(unsafe { transmute(current) });
         priority.set(current);
         r
-    }
-    else {
+    } else {
         f(&mut *ptr)
     }
 }
 
 /// Sets the given software interrupt as pending
 #[inline(always)]
-pub fn pend<T: Pend>(int: T) {
-    unsafe{<T as Pend>::pend_int()};
+pub fn pend<T: Interrupt>(int: T) {
+    unsafe { <T as Interrupt>::pend_int() };
 }
 
 // Sets the given software interrupt as not pending
-pub fn unpend(int: Interrupt) {
-    unsafe{Peripherals::steal().CLIC.unpend(int)}
+pub fn unpend<T: Interrupt>(int: T) {
+    unsafe { <T as Interrupt>::clear_int() };
 }
 
-pub fn enable(int: Interrupt, prio: u8) {
-    unsafe{
-        let mut p = Peripherals::steal();
-        p.CLIC.set_priority(int, prio);
-        p.CLIC.unmask(int);
+pub fn enable<T: Interrupt>(int: T, prio: u8) {
+    unsafe {
+        <T as Interrupt>::set_priority(prio);
+        <T as Interrupt>::enable_int();
     }
 }
