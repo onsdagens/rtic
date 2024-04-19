@@ -94,8 +94,7 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
     };
     let priority = if ctxt.has_shared_resources(app) {
         Some(quote!(priority: &'a rtic::export::Priority,))
-    }
-    else {
+    } else {
         None
     };
     let core = if ctxt.is_init() {
@@ -103,10 +102,9 @@ pub fn codegen(ctxt: Context, app: &App, analysis: &Analysis) -> TokenStream2 {
     } else {
         None
     };
-    let lt = if ctxt.has_shared_resources(app) {
+    let _lt = if ctxt.has_shared_resources(app) {
         Some(quote!(<'a>))
-    }
-    else {
+    } else {
         None
     };
     let internal_context_name = util::internal_task_ident(name, "Context");

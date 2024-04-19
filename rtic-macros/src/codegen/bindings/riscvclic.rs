@@ -181,9 +181,9 @@ mod riscvclic {
         )]
     }
     pub fn handler_config(
-        app: &App,
-        analysis: &CodegenAnalysis,
-        dispatcher_name: Ident,
+        _app: &App,
+        _analysis: &CodegenAnalysis,
+        _dispatcher_name: Ident,
     ) -> Vec<TokenStream2> {
         vec![]
     }

@@ -1,6 +1,5 @@
 //pub use hippomenes_core::mintthresh;
 use core::cell::Cell;
-use core::mem::transmute;
 use hippomenes_core::mintthresh;
 use hippomenes_core::Interrupt;
 pub use hippomenes_core::Peripherals;
@@ -8,7 +7,7 @@ pub use hippomenes_core::Peripherals;
 compile_error!("Building for the CLIC, but 'riscv-clic-backend not selected'");
 
 #[inline(always)]
-pub fn run<F>(priority: u8, f: F)
+pub fn run<F>(_priority: u8, f: F)
 where
     F: FnOnce(),
 {
@@ -65,9 +64,9 @@ pub unsafe fn lock<T, R>(
     if current < ceiling {
         priority.set(ceiling);
         //mintthresh::Bits::write(ceiling.into());
-        mintthresh::Priority::write_field(unsafe { transmute(ceiling) });
+        mintthresh::Priority::write(ceiling as usize);
         let r = f(&mut *ptr);
-        mintthresh::Priority::write_field(unsafe { transmute(current) });
+        mintthresh::Priority::write(current as usize);
         priority.set(current);
         r
     } else {
@@ -77,16 +76,16 @@ pub unsafe fn lock<T, R>(
 
 /// Sets the given software interrupt as pending
 #[inline(always)]
-pub fn pend<T: Interrupt>(int: T) {
+pub fn pend<T: Interrupt>(_int: T) {
     unsafe { <T as Interrupt>::pend_int() };
 }
 
 // Sets the given software interrupt as not pending
-pub fn unpend<T: Interrupt>(int: T) {
+pub fn unpend<T: Interrupt>(_int: T) {
     unsafe { <T as Interrupt>::clear_int() };
 }
 
-pub fn enable<T: Interrupt>(int: T, prio: u8) {
+pub fn enable<T: Interrupt>(_int: T, prio: u8) {
     unsafe {
         <T as Interrupt>::set_priority(prio);
         <T as Interrupt>::enable_int();
