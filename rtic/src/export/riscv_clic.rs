@@ -63,10 +63,11 @@ pub unsafe fn lock<T, R>(
     let current = priority.get();
     if current < ceiling {
         priority.set(ceiling);
-        //mintthresh::Bits::write(ceiling.into());
-        mintthresh::Priority::write(ceiling as usize);
+        mintthresh::Bits::write(ceiling.into());
+        // mintthresh::Priority::write(ceiling as usize);
         let r = f(&mut *ptr);
-        mintthresh::Priority::write(current as usize);
+        mintthresh::Bits::write(current.into());
+        //mintthresh::Priority::write(current as usize);
         priority.set(current);
         r
     } else {
