@@ -20,6 +20,7 @@ repository = "https://github.com/rtic-rs/rtic"
 features = [
     "cortex-m-systick",
     "rp2040",
+    "rp235x",
     "nrf52840",
     "imxrt_gpt1",
     "imxrt_gpt2",
@@ -30,6 +31,7 @@ features = [
     "stm32_tim4",
     "stm32_tim5",
     "stm32_tim15",
+    "esp32c3-systimer",
 ]
 rustdoc-flags = ["--cfg", "docsrs"]
 
@@ -43,6 +45,9 @@ critical-section = { version = "1", optional = true }
 
 # RP2040
 rp2040-pac = { version = "0.6", optional = true }
+
+# RP235x
+rp235x-pac = { version = "0.1.0", optional = true }
 
 # nRF52
 nrf52805-pac = { version = "0.12.2", optional = true }
@@ -60,6 +65,11 @@ stm32-metapac = { version = "15.0.0", optional = true }
 
 # i.MX RT
 imxrt-ral = { version = "0.5.3", optional = true }
+
+
+esp32c3 = {version = "0.22.0", optional = true }
+riscv = {version = "0.11.1", optional = true }
+
 
 [build-dependencies]
 proc-macro2 = { version = "1.0.36", optional = true }
@@ -80,6 +90,9 @@ systick-64bit = []
 # Timer peripheral on the RP2040
 rp2040 = ["dep:cortex-m", "dep:rp2040-pac"]
 
+# Timer peripheral on the RP235x
+rp235x = ["dep:cortex-m", "dep:rp235x-pac"]
+
 # nRF Timers and RTC
 nrf52805 = ["dep:cortex-m", "dep:nrf52805-pac", "dep:critical-section"]
 nrf52810 = ["dep:cortex-m", "dep:nrf52810-pac", "dep:critical-section"]
@@ -96,6 +109,9 @@ nrf9160 = ["dep:cortex-m", "dep:nrf9160-pac", "dep:critical-section"]
 imxrt = ["dep:cortex-m", "dep:imxrt-ral"]
 imxrt_gpt1 = ["imxrt"]
 imxrt_gpt2 = ["imxrt"]
+
+# ESP32-C3 Timer
+esp32c3-systimer = ["dep:esp32c3", "dep:riscv"]
 
 # STM32 timers
 # Use as `features = ["stm32g081kb", "stm32_tim15"]`

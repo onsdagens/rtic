@@ -1,6 +1,11 @@
 //! In-tree implementations of the [`rtic_time::Monotonic`] (reexported) trait for
 //! timers & clocks found on commonly used microcontrollers.
 //!
+//! If you are using a microcontroller where CAS operations are not available natively, you might
+//! have to enable the `critical-section` or `unsafe-assume-single-core` feature of the
+//! [`portable-atomic`](https://docs.rs/portable-atomic/latest/portable_atomic/) dependency
+//! yourself for this dependency to compile.
+//!
 //! To enable the implementations, you must enable a feature for the specific MCU you're targeting.
 //!
 //! # Cortex-M Systick
@@ -34,11 +39,17 @@ pub use rtic_time::{
     TimeoutError,
 };
 
+#[cfg(feature = "esp32c3-systimer")]
+pub mod esp32c3;
+
 #[cfg(feature = "cortex-m-systick")]
 pub mod systick;
 
 #[cfg(feature = "rp2040")]
 pub mod rp2040;
+
+#[cfg(feature = "rp235x")]
+pub mod rp235x;
 
 #[cfg(feature = "imxrt")]
 pub mod imxrt;
@@ -66,6 +77,7 @@ pub(crate) const fn cortex_logical2hw(logical: u8, nvic_prio_bits: u8) -> u8 {
 }
 
 #[cfg(any(
+    feature = "rp235x",
     feature = "rp2040",
     feature = "nrf52805",
     feature = "nrf52810",

@@ -10,6 +10,9 @@ license = "MIT OR Apache-2.0"
 rtic = { path = "../../rtic/" }
 esp-hal = { version = "0.20.1", features = ["esp32c3"] }
 esp-backtrace = { version = "0.14.0", features = [
+rtic = {path = "../../rtic/"}
+rtic-monotonics = {path = "../../rtic-monotonics/"}
+
     "esp32c3",
     "panic-handler",
     "exception-handler",
@@ -20,4 +23,4 @@ esp-println = { version = "0.11.0", features = ["esp32c3"] }
 
 [features]
 test-critical-section = []
-riscv-esp32c3-backend = ["rtic/riscv-esp32c3-backend"]
+riscv-esp32c3-backend = ["rtic/riscv-esp32c3-backend", "rtic-monotonics/esp32c3-systimer"]
